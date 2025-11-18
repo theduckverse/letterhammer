@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LetterHammer – AI Letter Generator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    :root {
+      --lh-blue-light: #e8f1ff;
+      --lh-blue: #3b82f6;
+      --lh-blue-dark: #1e3a8a;
+      --lh-bg: #f8fafc;
+    }
+    body {
+      background-color: var(--lh-bg);
+    }
+  </style>
+</head>
+
+<body class="text-slate-800 font-sans">
+
+  <!-- NAVBAR -->
+  <nav class="w-full bg-white shadow-sm fixed top-0 z-50">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
+      <div class="text-2xl font-bold text-[var(--lh-blue-dark)]">LetterHammer</div>
+      <div class="flex space-x-6 text-slate-700 font-medium">
+        <a href="#scenarios" class="hover:text-[var(--lh-blue)]">Scenarios</a>
+        <a href="#how" class="hover:text-[var(--lh-blue)]">How It Works</a>
+        <a href="#pricing" class="hover:text-[var(--lh-blue)]">Pricing</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="pt-28 pb-20 bg-white">
+    <div class="max-w-5xl mx-auto text-center px-6">
+      <h1 class="text-4xl md:text-5xl font-bold text-slate-900 leading-tight">
+        Turn Your Frustration Into a Clear, Powerful Letter
+      </h1>
+      <p class="mt-4 text-lg text-slate-600 max-w-2xl mx-auto">
+        AI-written letters that help you fight bills, tickets, landlords, refunds,
+        debt collectors, and more. Just answer a few simple questions.
+      </p>
+      <button class="mt-8 px-8 py-3 bg-[var(--lh-blue)] text-white rounded-xl shadow hover:bg-[var(--lh-blue-dark)] transition">
+        Start Free
+      </button>
+    </div>
+  </section>
+
+  <!-- SCENARIOS -->
+  <section id="scenarios" class="py-20 bg-[var(--lh-blue-light)]">
+    <div class="max-w-6xl mx-auto px-6">
+      <h2 class="text-3xl font-bold text-slate-900 mb-8">Choose Your Situation</h2>
+
+      <div class="grid md:grid-cols-3 gap-6">
+
+        <div class="scenario-card bg-white p-6 rounded-2xl shadow hover:shadow-md cursor-pointer border border-slate-200">
+          <h3 class="text-xl font-semibold">Parking Ticket Appeal</h3>
+          <p class="text-slate-600 mt-2">Dispute an unfair or incorrect parking citation.</p>
+        </div>
+
+        <div class="scenario-card bg-white p-6 rounded-2xl shadow hover:shadow-md cursor-pointer border border-slate-200">
+          <h3 class="text-xl font-semibold">Medical Bill Dispute</h3>
+          <p class="text-slate-600 mt-2">Challenge incorrect or inflated medical charges.</p>
+        </div>
+
+        <div class="scenario-card bg-white p-6 rounded-2xl shadow hover:shadow-md cursor-pointer border border-slate-200">
+          <h3 class="text-xl font-semibold">Refund Request Escalation</h3>
+          <p class="text-slate-600 mt-2">Get a refund when customer service failed.</p>
+        </div>
+
+        <div class="scenario-card bg-white p-6 rounded-2xl shadow hover:shadow-md cursor-pointer border border-slate-200">
+          <h3 class="text-xl font-semibold">Landlord / Rental Issue</h3>
+          <p class="text-slate-600 mt-2">Repairs, deposits, illegal fees, and more.</p>
+        </div>
+
+        <div class="scenario-card bg-white p-6 rounded-2xl shadow hover:shadow-md cursor-pointer border border-slate-200">
+          <h3 class="text-xl font-semibold">Debt Collector Validation</h3>
+          <p class="text-slate-60
