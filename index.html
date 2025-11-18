@@ -3,12 +3,27 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>LetterHammer – AI Letter Generator</title>
-    <!-- REMOVED: <script src="https://cdn.tailwindcss.com"></script> to prevent loading issues -->
     
-    <!-- EMBEDDED TAILWIND STYLES: This block contains the core classes needed for the layout -->
-    <!-- NOTE: If this block still fails to render, we will switch to generating all CSS manually. -->
+    <!-- FIX: Loading Tailwind via CDN to ensure proper styling in the live environment. -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Custom Tailwind configuration to make color variables accessible
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'lh-blue-light': '#e8f1ff',
+                        'lh-blue': '#3b82f6',
+                        'lh-blue-dark': '#1e3a8a',
+                        'lh-bg': '#f8fafc',
+                    },
+                },
+            },
+        }
+    </script>
+    
     <style>
-        /* Custom Variables */
+        /* Define CSS Variables for custom colors and general styles */
         :root {
             --lh-blue-light: #e8f1ff;
             --lh-blue: #3b82f6;
@@ -16,94 +31,13 @@
             --lh-bg: #f8fafc;
         }
 
-        /* Basic Reset and Font Setup (Inter is assumed or fallback) */
+        /* Basic Font Setup (Tailwind handles most styling) */
         body {
-            background-color: var(--lh-bg);
             font-family: 'Inter', sans-serif;
             min-height: 100vh;
         }
-        
-        /* Utility Classes based on Tailwind names for guaranteed styling */
-        .w-full { width: 100%; }
-        .mx-auto { margin-left: auto; margin-right: auto; }
-        .px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
-        .py-4 { padding-top: 1rem; padding-bottom: 1rem; }
-        .flex { display: flex; }
-        .justify-between { justify-content: space-between; }
-        .items-center { align-items: center; }
-        .text-2xl { font-size: 1.5rem; line-height: 2rem; }
-        .font-bold { font-weight: 700; }
-        .text-slate-700 { color: #475569; }
-        .font-medium { font-weight: 500; }
-        .space-x-6 > :not([hidden]) ~ :not([hidden]) { margin-left: 1.5rem; }
-        .transition { transition-property: all; transition-duration: 150ms; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); }
-        .sm\\:flex { display: none; }
-        @media (min-width: 640px) { .sm\\:flex { display: flex; } }
-        .bg-white { background-color: #ffffff; }
-        .shadow-sm { box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.05); }
-        .fixed { position: fixed; }
-        .top-0 { top: 0; }
-        .z-50 { z-index: 50; }
-        .max-w-6xl { max-width: 72rem; }
-        .px-5 { padding-left: 1.25rem; padding-right: 1.25rem; }
-        .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
-        .rounded-xl { border-radius: 0.75rem; }
-        .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
-        .font-semibold { font-weight: 600; }
-        .shadow { box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06); }
-        .hover\\:text-\\[var\\(--lh-blue\\)\\]:hover { color: var(--lh-blue); }
-        .hover\\:bg-\\[var\\(--lh-blue-dark\\)\\]:hover { background-color: var(--lh-blue-dark); }
-        .focus\\:outline-none:focus { outline: 2px solid transparent; outline-offset: 2px; }
-        .focus\\:ring-2:focus { --tw-ring-offset-shadow: 0 0 #0000; --tw-ring-shadow: 0 0 0 2px var(--lh-blue); box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow); }
-        .pt-28 { padding-top: 7rem; }
-        .pb-20 { padding-bottom: 5rem; }
-        .max-w-5xl { max-width: 64rem; }
-        .text-center { text-align: center; }
-        .text-4xl { font-size: 2.25rem; line-height: 2.5rem; }
-        .md\\:text-5xl { font-size: 3rem; line-height: 1; }
-        @media (min-width: 768px) { .md\\:text-5xl { font-size: 3rem; line-height: 1; } }
-        .text-slate-900 { color: #0f172a; }
-        .leading-tight { line-height: 1.25; }
-        .mt-4 { margin-top: 1rem; }
-        .text-lg { font-size: 1.125rem; line-height: 1.75rem; }
-        .text-slate-600 { color: #475569; }
-        .max-w-2xl { max-width: 42rem; }
-        .mt-8 { margin-top: 2rem; }
-        .inline-block { display: inline-block; }
-        .px-8 { padding-left: 2rem; padding-right: 2rem; }
-        .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
-        .py-20 { padding-top: 5rem; padding-bottom: 5rem; }
-        .text-3xl { font-size: 1.875rem; line-height: 2.25rem; }
-        .mb-8 { margin-bottom: 2rem; }
-        .grid { display: grid; }
-        .gap-6 { gap: 1.5rem; }
-        .md\\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-        @media (min-width: 768px) { .md\\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-        .p-6 { padding: 1.5rem; }
-        .rounded-2xl { border-radius: 1rem; }
-        .hover\\:shadow-lg:hover { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
-        .cursor-pointer { cursor: pointer; }
-        .border { border-width: 1px; }
-        .border-slate-200 { border-color: #e2e8f0; }
-        .text-xl { font-size: 1.25rem; line-height: 1.75rem; }
-        .mt-2 { margin-top: 0.5rem; }
-        .mb-10 { margin-bottom: 2.5rem; }
-        .gap-10 { gap: 2.5rem; }
-        .text-5xl { font-size: 3rem; line-height: 1; }
-        .mb-4 { margin-bottom: 1rem; }
-        .mb-2 { margin-bottom: 0.5rem; }
-        .gap-8 { gap: 2rem; }
-        .p-8 { padding: 2rem; }
-        .border-2 { border-width: 2px; }
-        .scale-105 { --tw-scale-x: 1.05; --tw-scale-y: 1.05; transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y)); }
-        .bg-slate-200 { background-color: #e2e8f0; }
-        .hover\\:bg-slate-300:hover { background-color: #cbd5e1; }
-        .border-t { border-top-width: 1px; }
-        .md\\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-        @media (min-width: 768px) { .md\\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 
-
-        /* Custom Styles for Interactive Elements */
+        /* Custom Styles for Interactive Elements (Used where Tailwind classes need customization) */
         .lh-primary-btn {
             background-color: var(--lh-blue);
             transition: background-color 0.15s;
@@ -115,61 +49,6 @@
             border-color: var(--lh-blue);
             box-shadow: 0 0 0 2px var(--lh-blue);
             outline: none;
-        }
-
-        /* Modal Specific Styles */
-        .fixed { position: fixed; }
-        .inset-0 { top: 0; right: 0; bottom: 0; left: 0; }
-        .bg-black\\/40 { background-color: rgba(0, 0, 0, 0.4); }
-        .flex { display: flex; }
-        .justify-center { justify-content: center; }
-        .items-center { align-items: center; }
-        .z-50 { z-index: 50; }
-        .p-4 { padding: 1rem; }
-        .overflow-y-auto { overflow-y: auto; }
-        .max-w-lg { max-width: 32rem; }
-        .max-w-2xl { max-width: 42rem; }
-        .w-full { width: 100%; }
-        .shadow-2xl { box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
-        .my-10 { margin-top: 2.5rem; margin-bottom: 2.5rem; }
-        .text-\\[var\\(--lh-blue-dark\\)\\] { color: var(--lh-blue-dark); }
-        .p-3 { padding: 0.75rem; }
-        .border-slate-300 { border-color: #cbd5e1; }
-        .mt-1 { margin-top: 0.25rem; }
-        .mt-4 { margin-top: 1rem; }
-        .mt-6 { margin-top: 1.5rem; }
-        .mt-3 { margin-top: 0.75rem; }
-        .bg-red-100 { background-color: #fee2e2; }
-        .text-red-700 { color: #b91c1c; }
-        .flex-1 { flex: 1 1 0%; }
-        .space-x-3 > :not([hidden]) ~ :not([hidden]) { margin-left: 0.75rem; }
-        .sm\\:space-x-3 > :not([hidden]) ~ :not([hidden]) { margin-left: 0.75rem; }
-        @media (min-width: 640px) { .sm\\:space-x-3 > :not([hidden]) ~ :not([hidden]) { margin-left: 0.75rem; } }
-        .sm\\:space-y-0 > :not([hidden]) ~ :not([hidden]) { margin-top: 0; margin-bottom: 0; }
-        @media (min-width: 640px) { .sm\\:space-y-0 > :not([hidden]) ~ :not([hidden]) { margin-top: 0; margin-bottom: 0; } }
-        .space-y-3 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.75rem; }
-        .sm\\:flex-row { flex-direction: row; }
-        @media (min-width: 640px) { .sm\\:flex-row { flex-direction: row; } }
-        .flex-col { flex-direction: column; }
-        .bg-slate-50 { background-color: #f8fafc; }
-        .max-h-\\[60vh\\] { max-height: 60vh; }
-        .overflow-auto { overflow: auto; }
-        .font-mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
-        .resize-none { resize: none; }
-        .text-white { color: #ffffff; }
-        .hover\\:bg-slate-100:hover { background-color: #f1f5f9; }
-
-        /* Ensure all form elements inherit box-sizing and look good */
-        input, textarea, button {
-            box-sizing: border-box;
-        }
-
-        /* Additional needed styles for mobile responsiveness */
-        @media (max-width: 640px) {
-            .sm\\:flex { display: none !important; }
-            /* Adjusted grid layout for mobile */
-            .md\\:grid-cols-3, .md\\:grid-cols-4 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
-            .md\\:text-5xl { font-size: 2.25rem; line-height: 2.5rem; }
         }
     </style>
 </head>
