@@ -77,6 +77,10 @@
         <div class="max-w-5xl mx-auto text-center px-6">
             <h1 class="text-4xl md:text-5xl font-bold text-slate-900 leading-tight">Turn Your Frustration Into a Clear, Powerful Letter</h1>
             <p class="mt-4 text-lg text-slate-600 max-w-2xl mx-auto">AI‑written letters that help you fight bills, tickets, landlords, refunds, debt collectors, and more. Just answer a few simple questions.</p>
+            <!-- New element to show user's limits -->
+            <div id="limits-display" class="mt-6 p-3 rounded-xl bg-[var(--lh-bg-soft)] inline-block text-slate-700">
+                <span class="text-sm">Connecting to usage tracker...</span>
+            </div>
             <!-- Updated Link Button Color -->
             <a href="#scenarios" class="inline-block mt-8 px-8 py-3 bg-[var(--lh-primary)] text-white rounded-xl shadow hover:bg-[var(--lh-primary-hover)] transition">
                 Start Generating Now
@@ -187,7 +191,7 @@
                     <h3 class="text-xl font-semibold mb-2">Free</h3>
                     <p class="text-slate-600 mb-4">1 standard letter</p>
                     <p class="text-3xl font-bold text-slate-900 mb-6">$0</p>
-                    <button class="px-6 py-3 rounded-xl bg-slate-200 hover:bg-slate-300 transition">Start</button>
+                    <button onclick="alert('You are currently on the Free plan.')" class="px-6 py-3 rounded-xl bg-slate-200 hover:bg-slate-300 transition">Current Plan</button>
                 </div>
 
                 <div class="bg-white p-8 rounded-2xl shadow-lg border-2 border-[var(--lh-primary)] scale-105">
@@ -195,14 +199,14 @@
                     <p class="text-slate-600 mb-4">Unlimited letters + all scenarios</p>
                     <p class="text-3xl font-bold text-slate-900 mb-6">$19/mo</p>
                     <!-- Updated Button Color -->
-                    <button class="px-6 py-3 rounded-xl bg-[var(--lh-primary)] text-white hover:bg-[var(--lh-primary-hover)] transition">Upgrade</button>
+                    <button onclick="showUpgradeModal()" class="px-6 py-3 rounded-xl bg-[var(--lh-primary)] text-white hover:bg-[var(--lh-primary-hover)] transition">Upgrade Now</button>
                 </div>
 
                 <div class="bg-white p-8 rounded-2xl shadow border border-slate-200">
                     <h3 class="text-xl font-semibold mb-2">Case Bundle</h3>
                     <p class="text-slate-600 mb-4">6 letters for one ongoing issue</p>
                     <p class="text-3xl font-bold text-slate-900 mb-6">$49</p>
-                    <button class="px-6 py-3 rounded-xl bg-slate-200 hover:bg-slate-300 transition">Get Bundle</button>
+                    <button onclick="showUpgradeModal()" class="px-6 py-3 rounded-xl bg-slate-200 hover:bg-slate-300 transition">Get Bundle</button>
                 </div>
             </div>
         </div>
@@ -213,277 +217,423 @@
         <p>© 2025 LetterHammer. All rights reserved. Note: This is not legal advice.</p>
     </footer>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            // ===== AI GENERATOR SETUP =====
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, updateDoc, onSnapshot, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        
+        // --- FIREBASE CONFIGURATION & GLOBALS ---
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-letterhammer';
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
-            // Example scenario templates (using generic inputs for demo)
-            const SCENARIOS = {
-                "Parking Ticket Appeal": [
-                    { id: "fullName", label: "Your Full Name", type: "text", placeholder: "John A. Doe" },
-                    { id: "address", label: "Your Mailing Address", type: "textarea", placeholder: "123 Main St, Anytown, CA" },
-                    { id: "ticketNumber", label: "Ticket Number", type: "text", placeholder: "ABC-12345" },
-                    { id: "issuingAgency", label: "Issuing Agency", type: "text", placeholder: "City of Anytown Parking Authority" },
-                    { id: "incidentDate", label: "Incident Date", type: "text", placeholder: "01/15/2025" },
-                    { id: "reason", label: "Why is the ticket unfair? (Be specific)", type: "textarea", placeholder: "The sign was obscured by a tree branch, making the parking restriction invisible." },
-                    { id: "desiredOutcome", label: "What result do you want?", type: "text", placeholder: "Waiver of the fine and dismissal of the citation." }
-                ],
-                "Medical Bill Dispute": [
-                    { id: "fullName", label: "Your Full Name", type: "text", placeholder: "John A. Doe" },
-                    { id: "provider", label: "Medical Provider/Hospital", type: "text", placeholder: "General Hospital Billing Dept" },
-                    { id: "accountNumber", label: "Account/Reference Number", type: "text", placeholder: "987654321" },
-                    { id: "amount", label: "Bill Amount Disputed", type: "text", placeholder: "$4,500.00" },
-                    { id: "issue", label: "What is wrong about the bill?", type: "textarea", placeholder: "I was charged for a procedure (CPT 99203) that was included in the bundled price of the surgery (CPT 12345)." },
-                    { id: "desiredOutcome", label: "What outcome do you want?", type: "text", placeholder: "Adjustment of the bill to remove the duplicate charge of $4,500.00." }
-                ],
-                "Refund Request Escalation": [
-                    { id: "fullName", label: "Your Full Name", type: "text", placeholder: "John A. Doe" },
-                    { id: "companyName", label: "Company Name", type: "text", placeholder: "ACME Online Store" },
-                    { id: "orderNumber", label: "Order/Transaction Number", type: "text", placeholder: "ORD-9876" },
-                    { id: "purchaseDate", label: "Purchase Date", type: "text", placeholder: "10/01/2024" },
-                    { id: "issue", label: "What is the history of the issue and why is the refund due?", type: "textarea", placeholder: "I returned the item within the 30-day window on Oct 15th (tracking 1Z...). Customer service promised a refund twice, but it has not been processed." },
-                    { id: "amount", label: "Refund Amount Due", type: "text", placeholder: "$150.00" }
-                ],
-                "Landlord / Rental Issue": [
-                    { id: "fullName", label: "Your Full Name", type: "text", placeholder: "John A. Doe" },
-                    { id: "landlordName", label: "Landlord/Management Name", type: "text", placeholder: "Smith Property Management" },
-                    { id: "propertyAddress", label: "Rental Property Address", type: "textarea", placeholder: "Apt 2B, 456 Oak St" },
-                    { id: "issueDate", label: "Date Issue Started", type: "text", placeholder: "03/01/2025" },
-                    { id: "issueDetail", label: "Describe the specific issue and what has failed so far.", type: "textarea", placeholder: "The heating system stopped working on March 1st. I notified the property manager via email on March 2nd and called on March 5th. It is still 40°F in the unit." },
-                    { id: "demand", label: "Formal Demand (e.g., immediate repair, rent reduction)", type: "text", placeholder: "Immediate repair of the heating system within 24 hours." }
-                ],
-                "Debt Collector Validation": [
-                    { id: "fullName", label: "Your Full Name", type: "text", placeholder: "John A. Doe" },
-                    { id: "address", label: "Your Mailing Address", type: "textarea", placeholder: "123 Main St, Anytown, CA" },
-                    { id: "collectorName", label: "Collection Agency Name", type: "text", placeholder: "Midland Funding LLC" },
-                    { id: "collectorAddress", label: "Collection Agency Address", type: "textarea", placeholder: "P.O. Box 123, Collector City, NY" },
-                    { id: "accountNumber", label: "Account Number from Collection Notice", type: "text", placeholder: "Reference # 555-DC-001" }
-                ],
-                "Workplace Issue Letter": [
-                    { id: "fullName", label: "Your Full Name", type: "text", placeholder: "John A. Doe" },
-                    { id: "managerName", label: "Manager/HR Name", type: "text", placeholder: "Jane Smith, HR Director" },
-                    { id: "companyName", label: "Company Name", type: "text", placeholder: "TechCorp Industries" },
-                    { id: "issueDate", label: "Date Issue Began", type: "text", placeholder: "11/01/2024" },
-                    { id: "issueDetail", label: "Describe the issue and evidence.", type: "textarea", placeholder: "I have not been paid overtime for the last 3 pay periods (approx 40 hours total). Time cards clearly show the extra hours worked, which is a violation of the FLSA." },
-                    { id: "desiredResolution", label: "Desired Resolution", type: "text", placeholder: "Immediate payment of all outstanding overtime wages." }
-                ],
-                // --- NEW SCENARIOS ADDED BELOW ---
-                "Credit Report Correction (FCRA)": [
-                    { id: "fullName", label: "Your Full Name", type: "text", placeholder: "John A. Doe" },
-                    { id: "address", label: "Your Mailing Address", type: "textarea", placeholder: "123 Main St, Anytown, CA" },
-                    { id: "creditBureau", label: "Credit Bureau to Send To", type: "text", placeholder: "Experian, Equifax, or TransUnion" },
-                    { id: "accountName", label: "Creditor Name", type: "text", placeholder: "ACME Credit Card" },
-                    { id: "accountNumber", label: "Account Number on Report", type: "text", placeholder: "1234XXXXXXXX9876" },
-                    { id: "disputeReason", label: "Why is the item incorrect?", type: "textarea", placeholder: "Account was paid in full on 03/15/2024, but the report still shows a late payment from April." }
-                ],
-                "Unsolicited Debt Communication Cease & Desist": [
-                    { id: "fullName", label: "Your Full Name", type: "text", placeholder: "John A. Doe" },
-                    { id: "address", label: "Your Mailing Address", type: "textarea", placeholder: "123 Main St, Anytown, CA" },
-                    { id: "collectorName", label: "Collection Agency Name", type: "text", placeholder: "Aggressive Collections Co." },
-                    { id: "collectorAddress", label: "Collection Agency Address", type: "textarea", placeholder: "100 Debt Row, Collection City, NY" },
-                    { id: "accountNumber", label: "Account Number from Notice (optional)", type: "text", placeholder: "Ref # 555-DC-001" },
-                    { id: "reason", label: "Briefly mention the type of harassment (e.g., constant calls, calling workplace)", type: "text", placeholder: "The company has called my workplace multiple times after being asked to stop." }
-                ],
-                "Data Deletion Request (GDPR/CCPA)": [
-                    { id: "fullName", label: "Your Full Name", type: "text", placeholder: "Jane B. Smith" },
-                    { id: "emailUsed", label: "Email Address Used for Account", type: "text", placeholder: "jane.smith@example.com" },
-                    { id: "companyName", label: "Company Holding Your Data", type: "text", placeholder: "SocialConnect Inc." },
-                    { id: "companyAddress", label: "Company's Data Privacy Address (if known)", type: "textarea", placeholder: "Data Privacy Office, 500 Tech Ave, Silicon Valley, CA" },
-                    { id: "dataDetail", label: "Specify the data you want deleted (e.g., all personal data, purchase history)", type: "text", placeholder: "All personal information and account history associated with my email." }
-                ]
-            };
-            // --- END NEW SCENARIOS ADDED ---
+        let app, db, auth;
+        let userId = null;
+        let userLimits = { lettersUsed: 0, maxLetters: 1, isPremium: false }; // Default free tier
 
-            // --- Modal Functions ---
+        // Function to get the path to the user's private limits document
+        function getLimitsDocRef(uid) {
+            return doc(db, `artifacts/${appId}/users/${uid}/user_data/limits`);
+        }
 
-            function openScenario(name) {
-                const fields = SCENARIOS[name];
-                let formHtml = "";
+        function setupLimitsListener() {
+            if (!db || !userId) return;
 
-                fields.forEach(f => {
-                    const inputType = f.type === 'textarea' ? `<textarea id='${f.id}' required rows="3" class='w-full p-3 border border-slate-300 rounded-xl mt-1 lh-focus' placeholder='${f.placeholder}'></textarea>` :
-                                                             `<input id='${f.id}' type='${f.type}' required class='w-full p-3 border border-slate-300 rounded-xl mt-1 lh-focus' placeholder='${f.placeholder}' />`;
+            const docRef = getLimitsDocRef(userId);
 
-                    formHtml += `
-                        <div>
-                            <label for='${f.id}' class='block font-medium text-slate-700 mt-4'>${f.label} *</label>
-                            ${inputType}
-                        </div>
-                    `;
-                });
-
-                const modal = document.createElement("div");
-                modal.id = "lh-modal";
-                // Using embedded CSS classes
-                modal.className = "fixed inset-0 bg-black/40 flex justify-center items-center z-50 p-4 overflow-y-auto";
-                modal.innerHTML = `
-                    <div class='bg-white p-8 rounded-2xl max-w-lg w-full shadow-2xl my-10'>
-                        <!-- Updated Header Color -->
-                        <h2 class='text-2xl font-bold mb-4 text-[var(--lh-dark)]'>${name}</h2>
-                        <form id="scenario-form">${formHtml}</form>
-                        <div id="modal-message" class="hidden text-sm p-3 rounded-lg mt-4 bg-red-100 text-red-700"></div>
-                        <!-- Updated Button Color -->
-                        <button id='lh-generate' class='lh-primary-btn mt-6 w-full text-white p-3 rounded-xl font-semibold transition'>Generate Letter</button>
-                        <button onclick="document.getElementById('lh-modal').remove()" class='mt-3 w-full p-3 rounded-xl border border-slate-300 hover:bg-slate-50 transition'>Cancel</button>
-                    </div>
-                `;
-
-                document.body.appendChild(modal);
-
-                // Attach listener to the generate button
-                document.getElementById("lh-generate").addEventListener('click', () => {
-                    const form = document.getElementById("scenario-form");
-                    if (form.checkValidity()) {
-                        generateLetter(name, fields);
-                    } else {
-                        // Display error for required fields
-                        document.getElementById('modal-message').textContent = 'Please fill out all required fields.';
-                        document.getElementById('modal-message').classList.remove('hidden');
-                    }
-                });
-            }
-
-            // Attach onclick to scenario cards
-            document.querySelectorAll('#scenarios .scenario-card').forEach((card) => {
-                card.addEventListener('click', () => openScenario(card.getAttribute('data-scenario')));
+            onSnapshot(docRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    // Load existing data
+                    const data = docSnap.data();
+                    // Max letters for the Free tier is 1, Premium is conceptually infinite
+                    userLimits.isPremium = data.isPremium || false;
+                    userLimits.maxLetters = userLimits.isPremium ? Infinity : 1;
+                    userLimits.lettersUsed = data.lettersUsed || 0;
+                } else {
+                    // New user, initialize their limits document with one free letter
+                    userLimits = { lettersUsed: 0, maxLetters: 1, isPremium: false };
+                    setDoc(docRef, userLimits, { merge: true }).catch(e => console.error("Error setting initial limits:", e));
+                }
+                updateLimitsUI();
+            }, (error) => {
+                console.error("Error listening to user limits:", error);
             });
+        }
 
-            // --- AI GENERATION (Gemini) ---
-            async function generateLetter(scenarioName, fields) {
-                const generateButton = document.getElementById("lh-generate");
-                const originalText = generateButton.textContent;
-                const modalMessage = document.getElementById('modal-message');
+        async function initFirebase() {
+            try {
+                // Set Firestore logging to debug
+                setLogLevel('Debug');
+                
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
 
-                generateButton.textContent = "Generating... (Please wait)";
-                generateButton.disabled = true;
-                modalMessage.classList.add('hidden');
-
-                // Collect answers
-                const answers = {};
-                fields.forEach(f => {
-                    answers[f.id] = document.getElementById(f.id).value.trim();
-                });
-
-                const promptText = `
-                    You are a professional letter writing assistant called LetterHammer.
-                    Your goal is to write a formal, clear, and professional letter based on the scenario and facts provided by the user.
-
-                    Instructions:
-                    1. Format the letter for printing, including placeholders like "[Sender Signature]" and "[Today's Date]".
-                    2. Use the exact information provided by the user for names, addresses, and numbers.
-                    3. Do not include any conversational text or explanation before or after the letter, just the professional document itself.
-                    4. IMPORTANT: For scenarios related to Credit Report Correction or Debt Collection Cease & Desist, explicitly cite the relevant consumer protection laws (e.g., Fair Credit Reporting Act or Fair Debt Collection Practices Act) to make the letter legally robust.
-
-                    Scenario: ${scenarioName}
-
-                    User information:
-                    ${Object.entries(answers).map(([k,v]) => `- ${k}: ${v}`).join("\n")}
-                `;
-
-                // --- API CALL CONFIGURATION ---
-                const apiKey = ""; // Canvas will provide this if empty string
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-                const payload = {
-                    contents: [{ parts: [{ text: promptText }] }],
-                    systemInstruction: {
-                        parts: [{ text: "You are a professional letter writing assistant called LetterHammer. Write a formal, clear, and professional letter for the user's specified scenario. Include today's date and the sender/recipient addresses. Do not include any conversational text or explanation, just the letter itself, formatted as plain text." }]
-                    }
-                };
-
-                // Exponential Backoff Implementation
-                const maxRetries = 3;
-                let attempt = 0;
-                let output = "The AI service is currently unavailable. Please try again later.";
-
-                while (attempt < maxRetries) {
-                    try {
-                        const response = await fetch(apiUrl, {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify(payload)
-                        });
-
-                        if (response.ok) {
-                            const data = await response.json();
-                            output = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? "No response received. Please check your inputs.";
-                            break; // Success, exit loop
-                        } else if (response.status === 429 && attempt < maxRetries - 1) {
-                            // Rate limit, retry
-                            const delay = Math.pow(2, attempt) * 1000 + Math.random() * 1000;
-                            await new Promise(resolve => setTimeout(resolve, delay));
-                            attempt++;
-                        } else {
-                            // Other error, break loop
-                            output = `Error generating letter (Status: ${response.status}).`;
-                            break;
-                        }
-                    } catch (error) {
-                        // Network error
-                        if (attempt < maxRetries - 1) {
-                            const delay = Math.pow(2, attempt) * 1000 + Math.random() * 1000;
-                            await new Promise(resolve => setTimeout(resolve, delay));
-                            attempt++;
-                        } else {
-                            output = "Network error or connection failed.";
-                            break;
-                        }
-                    }
+                // Sign in using custom token if available, otherwise sign in anonymously
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth);
                 }
 
-                // Reset button state
-                generateButton.textContent = originalText;
-                generateButton.disabled = false;
+                // Set up auth state change listener to get the user ID
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        userId = user.uid;
+                        // Start listening to user limits data
+                        setupLimitsListener();
+                    } else {
+                        console.log("User logged out or failed to authenticate.");
+                        userId = null;
+                        updateLimitsUI();
+                    }
+                });
+            } catch (error) {
+                console.error("Error initializing Firebase:", error);
+                // Fallback UI display on error
+                document.getElementById('limits-display').textContent = 'Error connecting to service.';
+            }
+        }
+        
+        // --- UI & MODAL FUNCTIONS ---
 
-                // Hide input modal and show output modal
-                document.getElementById("lh-modal")?.remove();
-                showLetter(output);
+        function updateLimitsUI() {
+            const limitsDisplay = document.getElementById('limits-display');
+            if (!limitsDisplay) return;
+
+            if (userLimits.isPremium) {
+                limitsDisplay.innerHTML = '<span class="text-green-600 font-semibold">PREMIUM ACTIVATED - UNLIMITED LETTERS</span>';
+            } else {
+                const remaining = userLimits.maxLetters - userLimits.lettersUsed;
+                if (remaining > 0) {
+                    limitsDisplay.innerHTML = `<span class="text-slate-700">Free Letters Remaining: <span class="text-xl font-bold text-[var(--lh-primary)]">${remaining}</span></span>`;
+                } else {
+                    limitsDisplay.innerHTML = `<span class="text-red-600 font-semibold">FREE LIMIT REACHED.</span> <a href="#pricing" class="underline text-[var(--lh-primary)] hover:opacity-80">Upgrade to continue.</a>`;
+                }
+            }
+        }
+        
+        window.showUpgradeModal = function() {
+            // Function for the pricing buttons since we can't use window.alert()
+            const modal = document.createElement("div");
+            modal.id = "upgrade-modal";
+            modal.className = "fixed inset-0 bg-black/40 flex justify-center items-center z-50 p-4 overflow-y-auto";
+            modal.innerHTML = `
+                <div class='bg-white p-8 rounded-2xl max-w-sm w-full shadow-2xl my-10 text-center'>
+                    <h2 class='text-2xl font-bold mb-4 text-[var(--lh-primary)]'>Upgrade Required</h2>
+                    <p class='text-slate-700 mb-6'>This action is reserved for Premium users.</p>
+                    <p class='text-sm text-slate-500 mb-6'>
+                        To implement real monetization, you would integrate a payment provider (like Stripe or PayPal) here. 
+                        This button is currently a placeholder.
+                    </p>
+                    <a href="#pricing" onclick="document.getElementById('upgrade-modal').remove()" class='lh-primary-btn w-full inline-block text-white p-3 rounded-xl font-semibold transition hover:bg-[var(--lh-primary-hover)]'>View Plans</a>
+                    <button onclick="document.getElementById('upgrade-modal').remove()" class='mt-3 w-full p-3 rounded-xl border border-slate-300 hover:bg-slate-50 transition'>Close</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        // --- SCENARIO DATA ---
+        
+        const SCENARIOS = {
+            "Parking Ticket Appeal": [
+                { id: "fullName", label: "Your Full Name", type: "text", placeholder: "John A. Doe" },
+                { id: "address", label: "Your Mailing Address", type: "textarea", placeholder: "123 Main St, Anytown, CA" },
+                { id: "ticketNumber", label: "Ticket Number", type: "text", placeholder: "ABC-12345" },
+                { id: "issuingAgency", label: "Issuing Agency", type: "text", placeholder: "City of Anytown Parking Authority" },
+                { id: "incidentDate", label: "Incident Date", type: "text", placeholder: "01/15/2025" },
+                { id: "reason", label: "Why is the ticket unfair? (Be specific)", type: "textarea", placeholder: "The sign was obscured by a tree branch, making the parking restriction invisible." },
+                { id: "desiredOutcome", label: "What result do you want?", type: "text", placeholder: "Waiver of the fine and dismissal of the citation." }
+            ],
+            "Medical Bill Dispute": [
+                { id: "fullName", label: "Your Full Name", type: "text", placeholder: "John A. Doe" },
+                { id: "provider", label: "Medical Provider/Hospital", type: "text", placeholder: "General Hospital Billing Dept" },
+                { id: "accountNumber", label: "Account/Reference Number", type: "text", placeholder: "987654321" },
+                { id: "amount", label: "Bill Amount Disputed", type: "text", placeholder: "$4,500.00" },
+                { id: "issue", label: "What is wrong about the bill?", type: "textarea", placeholder: "I was charged for a procedure (CPT 99203) that was included in the bundled price of the surgery (CPT 12345)." },
+                { id: "desiredOutcome", label: "What outcome do you want?", type: "text", placeholder: "Adjustment of the bill to remove the duplicate charge of $4,500.00." }
+            ],
+            "Refund Request Escalation": [
+                { id: "fullName", label: "Your Full Name", type: "text", placeholder: "John A. Doe" },
+                { id: "companyName", label: "Company Name", type: "text", placeholder: "ACME Online Store" },
+                { id: "orderNumber", label: "Order/Transaction Number", type: "text", placeholder: "ORD-9876" },
+                { id: "purchaseDate", label: "Purchase Date", type: "text", placeholder: "10/01/2024" },
+                { id: "issue", label: "What is the history of the issue and why is the refund due?", type: "textarea", placeholder: "I returned the item within the 30-day window on Oct 15th (tracking 1Z...). Customer service promised a refund twice, but it has not been processed." },
+                { id: "amount", label: "Refund Amount Due", type: "text", placeholder: "$150.00" }
+            ],
+            "Landlord / Rental Issue": [
+                { id: "fullName", label: "Your Full Name", type: "text", placeholder: "John A. Doe" },
+                { id: "landlordName", label: "Landlord/Management Name", type: "text", placeholder: "Smith Property Management" },
+                { id: "propertyAddress", label: "Rental Property Address", type: "textarea", placeholder: "Apt 2B, 456 Oak St" },
+                { id: "issueDate", label: "Date Issue Started", type: "text", placeholder: "03/01/2025" },
+                { id: "issueDetail", label: "Describe the specific issue and what has failed so far.", type: "textarea", placeholder: "The heating system stopped working on March 1st. I notified the property manager via email on March 2nd and called on March 5th. It is still 40°F in the unit." },
+                { id: "demand", label: "Formal Demand (e.g., immediate repair, rent reduction)", type: "text", placeholder: "Immediate repair of the heating system within 24 hours." }
+            ],
+            "Debt Collector Validation": [
+                { id: "fullName", label: "Your Full Name", type: "text", placeholder: "John A. Doe" },
+                { id: "address", label: "Your Mailing Address", type: "textarea", placeholder: "123 Main St, Anytown, CA" },
+                { id: "collectorName", label: "Collection Agency Name", type: "text", placeholder: "Midland Funding LLC" },
+                { id: "collectorAddress", label: "Collection Agency Address", type: "textarea", placeholder: "P.O. Box 123, Collector City, NY" },
+                { id: "accountNumber", label: "Account Number from Collection Notice", type: "text", placeholder: "Reference # 555-DC-001" }
+            ],
+            "Workplace Issue Letter": [
+                { id: "fullName", label: "Your Full Name", type: "text", placeholder: "John A. Doe" },
+                { id: "managerName", label: "Manager/HR Name", type: "text", placeholder: "Jane Smith, HR Director" },
+                { id: "companyName", label: "Company Name", type: "text", placeholder: "TechCorp Industries" },
+                { id: "issueDate", label: "Date Issue Began", type: "text", placeholder: "11/01/2024" },
+                { id: "issueDetail", label: "Describe the issue and evidence.", type: "textarea", placeholder: "I have not been paid overtime for the last 3 pay periods (approx 40 hours total). Time cards clearly show the extra hours worked, which is a violation of the FLSA." },
+                { id: "desiredResolution", label: "Desired Resolution", type: "text", placeholder: "Immediate payment of all outstanding overtime wages." }
+            ],
+            // --- NEW SCENARIOS ADDED BELOW ---
+            "Credit Report Correction (FCRA)": [
+                { id: "fullName", label: "Your Full Name", type: "text", placeholder: "John A. Doe" },
+                { id: "address", label: "Your Mailing Address", type: "textarea", placeholder: "123 Main St, Anytown, CA" },
+                { id: "creditBureau", label: "Credit Bureau to Send To", type: "text", placeholder: "Experian, Equifax, or TransUnion" },
+                { id: "accountName", label: "Creditor Name", type: "text", placeholder: "ACME Credit Card" },
+                { id: "accountNumber", label: "Account Number on Report", type: "text", placeholder: "1234XXXXXXXX9876" },
+                { id: "disputeReason", label: "Why is the item incorrect?", type: "textarea", placeholder: "Account was paid in full on 03/15/2024, but the report still shows a late payment from April." }
+            ],
+            "Unsolicited Debt Communication Cease & Desist": [
+                { id: "fullName", label: "Your Full Name", type: "text", placeholder: "John A. Doe" },
+                { id: "address", label: "Your Mailing Address", type: "textarea", placeholder: "123 Main St, Anytown, CA" },
+                { id: "collectorName", label: "Collection Agency Name", type: "text", placeholder: "Aggressive Collections Co." },
+                { id: "collectorAddress", label: "Collection Agency Address", type: "textarea", placeholder: "100 Debt Row, Collection City, NY" },
+                { id: "accountNumber", label: "Account Number from Notice (optional)", type: "text", placeholder: "Ref # 555-DC-001" },
+                { id: "reason", label: "Briefly mention the type of harassment (e.g., constant calls, calling workplace)", type: "text", placeholder: "The company has called my workplace multiple times after being asked to stop." }
+            ],
+            "Data Deletion Request (GDPR/CCPA)": [
+                { id: "fullName", label: "Your Full Name", type: "text", placeholder: "Jane B. Smith" },
+                { id: "emailUsed", label: "Email Address Used for Account", type: "text", placeholder: "jane.smith@example.com" },
+                { id: "companyName", label: "Company Holding Your Data", type: "text", placeholder: "SocialConnect Inc." },
+                { id: "companyAddress", label: "Company's Data Privacy Address (if known)", type: "textarea", placeholder: "Data Privacy Office, 500 Tech Ave, Silicon Valley, CA" },
+                { id: "dataDetail", label: "Specify the data you want deleted (e.g., all personal data, purchase history)", type: "text", placeholder: "All personal information and account history associated with my email." }
+            ]
+        };
+
+        // --- MODAL FUNCTIONS (modified to use global functions) ---
+
+        function openScenario(name) {
+            // Check if the user is over the free limit
+            const remaining = userLimits.maxLetters - userLimits.lettersUsed;
+            if (remaining <= 0 && !userLimits.isPremium) {
+                document.getElementById('lh-modal')?.remove(); // Close any existing modal
+                showUpgradeModal();
+                return;
             }
 
-            // --- SHOW OUTPUT ---
-            function showLetter(text) {
-                const modal = document.createElement("div");
-                modal.id = "lh-output-modal";
-                // Using embedded CSS classes
-                modal.className = "fixed inset-0 bg-black/40 flex justify-center items-center z-50 p-4 overflow-y-auto";
+            const fields = SCENARIOS[name];
+            let formHtml = "";
 
-                modal.innerHTML = `
-                    <div class='bg-white p-8 rounded-2xl max-w-2xl w-full shadow-2xl my-10'>
-                        <!-- Updated Header Color -->
-                        <h2 class='text-2xl font-bold mb-4 text-[var(--lh-dark)]'>Your Generated Letter</h2>
-                        <p class="text-sm text-slate-600 mb-4">Review, edit if needed, and copy the final version below.</p>
-                        <textarea id='letter-output-textarea' rows='15' class='w-full p-4 border rounded-xl bg-slate-50 max-h-[60vh] overflow-auto font-mono text-sm resize-none'>${text}</textarea>
-                        
-                        <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3 mt-6">
-                            <!-- Updated Button Color -->
-                            <button id='lh-copy' class='lh-primary-btn flex-1 text-white p-3 rounded-xl font-semibold transition'>Copy Letter</button>
-                            <button onclick='document.getElementById("lh-output-modal").remove()' class='flex-1 p-3 rounded-xl border border-slate-300 hover:bg-slate-100 transition'>Close</button>
-                        </div>
+            fields.forEach(f => {
+                const inputType = f.type === 'textarea' ? `<textarea id='${f.id}' required rows="3" class='w-full p-3 border border-slate-300 rounded-xl mt-1 lh-focus' placeholder='${f.placeholder}'></textarea>` :
+                                                         `<input id='${f.id}' type='${f.type}' required class='w-full p-3 border border-slate-300 rounded-xl mt-1 lh-focus' placeholder='${f.placeholder}' />`;
+
+                formHtml += `
+                    <div>
+                        <label for='${f.id}' class='block font-medium text-slate-700 mt-4'>${f.label} *</label>
+                        ${inputType}
                     </div>
                 `;
+            });
 
-                document.body.appendChild(modal);
+            const modal = document.createElement("div");
+            modal.id = "lh-modal";
+            modal.className = "fixed inset-0 bg-black/40 flex justify-center items-center z-50 p-4 overflow-y-auto";
+            modal.innerHTML = `
+                <div class='bg-white p-8 rounded-2xl max-w-lg w-full shadow-2xl my-10'>
+                    <!-- Updated Header Color -->
+                    <h2 class='text-2xl font-bold mb-4 text-[var(--lh-dark)]'>${name}</h2>
+                    <form id="scenario-form">${formHtml}</form>
+                    <div id="modal-message" class="hidden text-sm p-3 rounded-lg mt-4 bg-red-100 text-red-700"></div>
+                    <!-- Updated Button Color -->
+                    <button id='lh-generate' class='lh-primary-btn mt-6 w-full text-white p-3 rounded-xl font-semibold transition'>Generate Letter</button>
+                    <button onclick="document.getElementById('lh-modal').remove()" class='mt-3 w-full p-3 rounded-xl border border-slate-300 hover:bg-slate-50 transition'>Cancel</button>
+                </div>
+            `;
 
-                // Attach copy listener
-                document.getElementById('lh-copy').addEventListener('click', () => {
-                    const textarea = document.getElementById('letter-output-textarea');
+            document.body.appendChild(modal);
 
-                    // Use document.execCommand('copy') for better iframe compatibility
-                    textarea.select();
-                    document.execCommand('copy');
+            // Attach listener to the generate button
+            document.getElementById("lh-generate").addEventListener('click', () => {
+                const form = document.getElementById("scenario-form");
+                if (form.checkValidity()) {
+                    generateLetter(name, fields);
+                } else {
+                    // Display error for required fields
+                    document.getElementById('modal-message').textContent = 'Please fill out all required fields.';
+                    document.getElementById('modal-message').classList.remove('hidden');
+                }
+            });
+        }
 
-                    const copyButton = document.getElementById('lh-copy');
-                    copyButton.textContent = 'Copied!';
-                    copyButton.classList.remove('lh-primary-btn');
-                    copyButton.classList.add('bg-green-500');
-
-                    setTimeout(() => {
-                        copyButton.textContent = 'Copy Letter';
-                        copyButton.classList.remove('bg-green-500');
-                        copyButton.classList.add('lh-primary-btn');
-                    }, 2000);
-                });
-            }
+        // Attach onclick to scenario cards
+        document.querySelectorAll('#scenarios .scenario-card').forEach((card) => {
+            card.addEventListener('click', () => openScenario(card.getAttribute('data-scenario')));
         });
+
+
+        // --- AI GENERATION (Gemini) ---
+        async function generateLetter(scenarioName, fields) {
+            const generateButton = document.getElementById("lh-generate");
+            const originalText = generateButton.textContent;
+            const modalMessage = document.getElementById('modal-message');
+
+            // --- MONETIZATION CHECK (CRITICAL) ---
+            const isAtLimit = userLimits.lettersUsed >= userLimits.maxLetters;
+
+            if (isAtLimit && !userLimits.isPremium) {
+                // Should have been caught by openScenario, but checking again for safety
+                document.getElementById("lh-modal")?.remove();
+                showUpgradeModal();
+                return;
+            }
+            // --- END MONETIZATION CHECK ---
+
+
+            generateButton.textContent = "Generating... (Please wait)";
+            generateButton.disabled = true;
+            modalMessage.classList.add('hidden');
+
+            // Collect answers
+            const answers = {};
+            fields.forEach(f => {
+                answers[f.id] = document.getElementById(f.id).value.trim();
+            });
+
+            const promptText = `
+                You are a professional letter writing assistant called LetterHammer.
+                Your goal is to write a formal, clear, and professional letter based on the scenario and facts provided by the user.
+
+                Instructions:
+                1. Format the letter for printing, including placeholders like "[Sender Signature]" and "[Today's Date]".
+                2. Use the exact information provided by the user for names, addresses, and numbers.
+                3. Do not include any conversational text or explanation before or after the letter, just the professional document itself.
+                4. IMPORTANT: For scenarios related to Credit Report Correction or Debt Collection Cease & Desist, explicitly cite the relevant consumer protection laws (e.g., Fair Credit Reporting Act or Fair Debt Collection Practices Act) to make the letter legally robust.
+
+                Scenario: ${scenarioName}
+
+                User information:
+                ${Object.entries(answers).map(([k,v]) => `- ${k}: ${v}`).join("\n")}
+            `;
+
+            // --- API CALL CONFIGURATION ---
+            const apiKey = ""; // Canvas will provide this if empty string
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            const payload = {
+                contents: [{ parts: [{ text: promptText }] }],
+                systemInstruction: {
+                    parts: [{ text: "You are a professional letter writing assistant called LetterHammer. Write a formal, clear, and professional letter for the user's specified scenario. Include today's date and the sender/recipient addresses. Do not include any conversational text or explanation, just the letter itself, formatted as plain text." }]
+                }
+            };
+
+            // Exponential Backoff Implementation
+            const maxRetries = 3;
+            let attempt = 0;
+            let output = "The AI service is currently unavailable. Please try again later.";
+            let success = false;
+
+            while (attempt < maxRetries) {
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        output = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? "No response received. Please check your inputs.";
+                        success = true;
+                        break; // Success, exit loop
+                    } else if (response.status === 429 && attempt < maxRetries - 1) {
+                        // Rate limit, retry
+                        const delay = Math.pow(2, attempt) * 1000 + Math.random() * 1000;
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        attempt++;
+                    } else {
+                        // Other error, break loop
+                        output = `Error generating letter (Status: ${response.status}).`;
+                        break;
+                    }
+                } catch (error) {
+                    // Network error
+                    if (attempt < maxRetries - 1) {
+                        const delay = Math.pow(2, attempt) * 1000 + Math.random() * 1000;
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        attempt++;
+                    } else {
+                        output = "Network error or connection failed.";
+                        break;
+                    }
+                }
+            }
+
+            // --- MONETIZATION USAGE UPDATE ---
+            if (success && !userLimits.isPremium && userId) {
+                const docRef = getLimitsDocRef(userId);
+                // Increment the usage count
+                updateDoc(docRef, { lettersUsed: userLimits.lettersUsed + 1 })
+                    .catch(e => console.error("Failed to update usage count:", e));
+            }
+            // --- END MONETIZATION USAGE UPDATE ---
+
+            // Reset button state
+            generateButton.textContent = originalText;
+            generateButton.disabled = false;
+
+            // Hide input modal and show output modal
+            document.getElementById("lh-modal")?.remove();
+            showLetter(output);
+        }
+
+        // --- SHOW OUTPUT ---
+        function showLetter(text) {
+            const modal = document.createElement("div");
+            modal.id = "lh-output-modal";
+            // Using embedded CSS classes
+            modal.className = "fixed inset-0 bg-black/40 flex justify-center items-center z-50 p-4 overflow-y-auto";
+
+            modal.innerHTML = `
+                <div class='bg-white p-8 rounded-2xl max-w-2xl w-full shadow-2xl my-10'>
+                    <!-- Updated Header Color -->
+                    <h2 class='text-2xl font-bold mb-4 text-[var(--lh-dark)]'>Your Generated Letter</h2>
+                    <p class="text-sm text-slate-600 mb-4">Review, edit if needed, and copy the final version below.</p>
+                    <textarea id='letter-output-textarea' rows='15' class='w-full p-4 border rounded-xl bg-slate-50 max-h-[60vh] overflow-auto font-mono text-sm resize-none'>${text}</textarea>
+                    
+                    <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3 mt-6">
+                        <!-- Updated Button Color -->
+                        <button id='lh-copy' class='lh-primary-btn flex-1 text-white p-3 rounded-xl font-semibold transition'>Copy Letter</button>
+                        <button onclick='document.getElementById("lh-output-modal").remove()' class='flex-1 p-3 rounded-xl border border-slate-300 hover:bg-slate-100 transition'>Close</button>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+
+            // Attach copy listener
+            document.getElementById('lh-copy').addEventListener('click', () => {
+                const textarea = document.getElementById('letter-output-textarea');
+
+                // Use document.execCommand('copy') for better iframe compatibility
+                textarea.select();
+                document.execCommand('copy');
+
+                const copyButton = document.getElementById('lh-copy');
+                copyButton.textContent = 'Copied!';
+                copyButton.classList.remove('lh-primary-btn');
+                copyButton.classList.add('bg-green-500');
+
+                setTimeout(() => {
+                    copyButton.textContent = 'Copy Letter';
+                    copyButton.classList.remove('bg-green-500');
+                    copyButton.classList.add('lh-primary-btn');
+                }, 2000);
+            });
+        }
+        
+        // Initialize Firebase on load
+        document.addEventListener("DOMContentLoaded", initFirebase);
+        
     </script>
 </body>
 </html>
