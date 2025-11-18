@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
@@ -7,15 +8,16 @@
     <!-- FIX: Loading Tailwind via CDN to ensure proper styling in the live environment. -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        // Custom Tailwind configuration to make color variables accessible
+        // Custom Tailwind configuration to define new, warmer colors
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        'lh-blue-light': '#e8f1ff',
-                        'lh-blue': '#3b82f6',
-                        'lh-blue-dark': '#1e3a8a',
-                        'lh-bg': '#f8fafc',
+                        // Airbnb-inspired palette
+                        'lh-primary': '#FF5A5F', // Rausch Red/Coral
+                        'lh-dark': '#1f2937',    // Very dark slate for text
+                        'lh-bg-soft': '#fef3f2', // Soft, light pink tint for sections
+                        'lh-bg-main': '#f9fafb', // Clean, light main background
                     },
                 },
             },
@@ -25,10 +27,11 @@
     <style>
         /* Define CSS Variables for custom colors and general styles */
         :root {
-            --lh-blue-light: #e8f1ff;
-            --lh-blue: #3b82f6;
-            --lh-blue-dark: #1e3a8a;
-            --lh-bg: #f8fafc;
+            --lh-primary: #FF5A5F;
+            --lh-primary-hover: #e04f54; /* Darker primary for hover */
+            --lh-dark: #1f2937;
+            --lh-bg-soft: #fef3f2;
+            --lh-bg-main: #f9fafb;
         }
 
         /* Basic Font Setup (Tailwind handles most styling) */
@@ -37,32 +40,35 @@
             min-height: 100vh;
         }
 
-        /* Custom Styles for Interactive Elements (Used where Tailwind classes need customization) */
+        /* Custom Styles for Interactive Elements (Using the new primary color) */
         .lh-primary-btn {
-            background-color: var(--lh-blue);
+            background-color: var(--lh-primary);
             transition: background-color 0.15s;
         }
         .lh-primary-btn:hover:not(:disabled) {
-            background-color: var(--lh-blue-dark);
+            background-color: var(--lh-primary-hover);
         }
         .lh-focus:focus {
-            border-color: var(--lh-blue);
-            box-shadow: 0 0 0 2px var(--lh-blue);
+            border-color: var(--lh-primary);
+            box-shadow: 0 0 0 2px var(--lh-primary);
             outline: none;
         }
     </style>
 </head>
-<body class="bg-[var(--lh-bg)] text-slate-800 font-sans">
+<body class="bg-[var(--lh-bg-main)] text-slate-800 font-sans">
     <!-- NAVBAR -->
     <nav class="w-full bg-white shadow-sm fixed top-0 z-50">
         <div class="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
-            <div class="text-2xl font-bold text-[var(--lh-blue-dark)]">LetterHammer</div>
+            <!-- Updated Header Color -->
+            <div class="text-2xl font-bold text-[var(--lh-dark)]">LetterHammer</div>
             <div class="hidden sm:flex space-x-6 text-slate-700 font-medium">
-                <a href="#scenarios" class="hover:text-[var(--lh-blue)] transition">Scenarios</a>
-                <a href="#how" class="hover:text-[var(--lh-blue)] transition">How It Works</a>
-                <a href="#pricing" class="hover:text-[var(--lh-blue)] transition">Pricing</a>
+                <!-- Updated Link Hover Color -->
+                <a href="#scenarios" class="hover:text-[var(--lh-primary)] transition">Scenarios</a>
+                <a href="#how" class="hover:text-[var(--lh-primary)] transition">How It Works</a>
+                <a href="#pricing" class="hover:text-[var(--lh-primary)] transition">Pricing</a>
             </div>
-            <button class="px-5 py-2 bg-[var(--lh-blue)] text-white rounded-xl text-sm font-semibold shadow hover:bg-[var(--lh-blue-dark)] transition focus:outline-none focus:ring-2 focus:ring-[var(--lh-blue)]">Start Free</button>
+            <!-- Updated Button Color -->
+            <button class="px-5 py-2 bg-[var(--lh-primary)] text-white rounded-xl text-sm font-semibold shadow hover:bg-[var(--lh-primary-hover)] transition focus:outline-none focus:ring-2 focus:ring-[var(--lh-primary)]">Start Free</button>
         </div>
     </nav>
 
@@ -71,18 +77,19 @@
         <div class="max-w-5xl mx-auto text-center px-6">
             <h1 class="text-4xl md:text-5xl font-bold text-slate-900 leading-tight">Turn Your Frustration Into a Clear, Powerful Letter</h1>
             <p class="mt-4 text-lg text-slate-600 max-w-2xl mx-auto">AI‑written letters that help you fight bills, tickets, landlords, refunds, debt collectors, and more. Just answer a few simple questions.</p>
-            <a href="#scenarios" class="inline-block mt-8 px-8 py-3 bg-[var(--lh-blue)] text-white rounded-xl shadow hover:bg-[var(--lh-blue-dark)] transition">
+            <!-- Updated Link Button Color -->
+            <a href="#scenarios" class="inline-block mt-8 px-8 py-3 bg-[var(--lh-primary)] text-white rounded-xl shadow hover:bg-[var(--lh-primary-hover)] transition">
                 Start Generating Now
             </a>
         </div>
     </section>
 
-    <!-- SCENARIOS -->
-    <section id="scenarios" class="py-20 bg-[var(--lh-blue-light)]">
+    <!-- SCENARIOS (Updated Section Background) -->
+    <section id="scenarios" class="py-20 bg-[var(--lh-bg-soft)]">
         <div class="max-w-6xl mx-auto px-6">
             <h2 class="text-3xl font-bold text-slate-900 mb-8">Choose Your Situation</h2>
 
-            <!-- Original 6 cards + 3 new cards -->
+            <!-- Original 6 cards + 3 new cards (Colors remain clean white) -->
             <div class="grid md:grid-cols-3 gap-6">
                 <!-- Row 1 -->
                 <div class="bg-white p-6 rounded-2xl shadow hover:shadow-lg transition cursor-pointer border border-slate-200 scenario-card" data-scenario="Parking Ticket Appeal">
@@ -147,19 +154,22 @@
 
             <div class="grid md:grid-cols-3 gap-10">
                 <div class="text-center">
-                    <div class="text-[var(--lh-blue)] text-5xl font-bold mb-4">1</div>
+                    <!-- Updated Numbered Step Color -->
+                    <div class="text-[var(--lh-primary)] text-5xl font-bold mb-4">1</div>
                     <h3 class="text-xl font-semibold mb-2">Pick a Scenario</h3>
                     <p class="text-slate-600">Choose from common issues like tickets, bills, landlords, refunds, or workplace conflicts.</p>
                 </div>
 
                 <div class="text-center">
-                    <div class="text-[var(--lh-blue)] text-5xl font-bold mb-4">2</div>
+                    <!-- Updated Numbered Step Color -->
+                    <div class="text-[var(--lh-primary)] text-5xl font-bold mb-4">2</div>
                     <h3 class="text-xl font-semibold mb-2">Answer a Few Questions</h3>
                     <p class="text-slate-600">We ask for just the facts. No legal jargon, no complexity — just what happened.</p>
                 </div>
 
                 <div class="text-center">
-                    <div class="text-[var(--lh-blue)] text-5xl font-bold mb-4">3</div>
+                    <!-- Updated Numbered Step Color -->
+                    <div class="text-[var(--lh-primary)] text-5xl font-bold mb-4">3</div>
                     <h3 class="text-xl font-semibold mb-2">Get Your Letter</h3>
                     <p class="text-slate-600">AI generates a polished, professional letter ready to send. Copy and use it instantly.</p>
                 </div>
@@ -167,8 +177,8 @@
         </div>
     </section>
 
-    <!-- PRICING -->
-    <section id="pricing" class="py-20 bg-[var(--lh-blue-light)]">
+    <!-- PRICING (Updated Section Background) -->
+    <section id="pricing" class="py-20 bg-[var(--lh-bg-soft)]">
         <div class="max-w-6xl mx-auto px-6 text-center">
             <h2 class="text-3xl font-bold mb-10 text-slate-900">Simple Pricing</h2>
 
@@ -180,11 +190,12 @@
                     <button class="px-6 py-3 rounded-xl bg-slate-200 hover:bg-slate-300 transition">Start</button>
                 </div>
 
-                <div class="bg-white p-8 rounded-2xl shadow-lg border-2 border-[var(--lh-blue)] scale-105">
+                <div class="bg-white p-8 rounded-2xl shadow-lg border-2 border-[var(--lh-primary)] scale-105">
                     <h3 class="text-xl font-semibold mb-2">Premium</h3>
                     <p class="text-slate-600 mb-4">Unlimited letters + all scenarios</p>
                     <p class="text-3xl font-bold text-slate-900 mb-6">$19/mo</p>
-                    <button class="px-6 py-3 rounded-xl bg-[var(--lh-blue)] text-white hover:bg-[var(--lh-blue-dark)] transition">Upgrade</button>
+                    <!-- Updated Button Color -->
+                    <button class="px-6 py-3 rounded-xl bg-[var(--lh-primary)] text-white hover:bg-[var(--lh-primary-hover)] transition">Upgrade</button>
                 </div>
 
                 <div class="bg-white p-8 rounded-2xl shadow border border-slate-200">
@@ -307,9 +318,11 @@
                 modal.className = "fixed inset-0 bg-black/40 flex justify-center items-center z-50 p-4 overflow-y-auto";
                 modal.innerHTML = `
                     <div class='bg-white p-8 rounded-2xl max-w-lg w-full shadow-2xl my-10'>
-                        <h2 class='text-2xl font-bold mb-4 text-[var(--lh-blue-dark)]'>${name}</h2>
+                        <!-- Updated Header Color -->
+                        <h2 class='text-2xl font-bold mb-4 text-[var(--lh-dark)]'>${name}</h2>
                         <form id="scenario-form">${formHtml}</form>
                         <div id="modal-message" class="hidden text-sm p-3 rounded-lg mt-4 bg-red-100 text-red-700"></div>
+                        <!-- Updated Button Color -->
                         <button id='lh-generate' class='lh-primary-btn mt-6 w-full text-white p-3 rounded-xl font-semibold transition'>Generate Letter</button>
                         <button onclick="document.getElementById('lh-modal').remove()" class='mt-3 w-full p-3 rounded-xl border border-slate-300 hover:bg-slate-50 transition'>Cancel</button>
                     </div>
@@ -435,11 +448,13 @@
 
                 modal.innerHTML = `
                     <div class='bg-white p-8 rounded-2xl max-w-2xl w-full shadow-2xl my-10'>
-                        <h2 class='text-2xl font-bold mb-4 text-[var(--lh-blue-dark)]'>Your Generated Letter</h2>
+                        <!-- Updated Header Color -->
+                        <h2 class='text-2xl font-bold mb-4 text-[var(--lh-dark)]'>Your Generated Letter</h2>
                         <p class="text-sm text-slate-600 mb-4">Review, edit if needed, and copy the final version below.</p>
                         <textarea id='letter-output-textarea' rows='15' class='w-full p-4 border rounded-xl bg-slate-50 max-h-[60vh] overflow-auto font-mono text-sm resize-none'>${text}</textarea>
                         
                         <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3 mt-6">
+                            <!-- Updated Button Color -->
                             <button id='lh-copy' class='lh-primary-btn flex-1 text-white p-3 rounded-xl font-semibold transition'>Copy Letter</button>
                             <button onclick='document.getElementById("lh-output-modal").remove()' class='flex-1 p-3 rounded-xl border border-slate-300 hover:bg-slate-100 transition'>Close</button>
                         </div>
