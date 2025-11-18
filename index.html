@@ -1,81 +1,595 @@
-<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LetterHammer – AI Letter Generator</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LetterHammer – AI Letter Generator</title>
+    <!-- REMOVED: <script src="https://cdn.tailwindcss.com"></script> to prevent loading issues -->
+    
+    <!-- EMBEDDED TAILWIND STYLES: This block contains the core classes needed for the layout -->
+    <!-- NOTE: If this block still fails to render, we will switch to generating all CSS manually. -->
+    <style>
+        /* Custom Variables */
+        :root {
+            --lh-blue-light: #e8f1ff;
+            --lh-blue: #3b82f6;
+            --lh-blue-dark: #1e3a8a;
+            --lh-bg: #f8fafc;
+        }
 
-  <style>
-    :root {
-      --lh-blue-light: #e8f1ff;
-      --lh-blue: #3b82f6;
-      --lh-blue-dark: #1e3a8a;
-      --lh-bg: #f8fafc;
-    }
-    body {
-      background-color: var(--lh-bg);
-    }
-  </style>
+        /* Basic Reset and Font Setup (Inter is assumed or fallback) */
+        body {
+            background-color: var(--lh-bg);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+        }
+        
+        /* Utility Classes based on Tailwind names for guaranteed styling */
+        .w-full { width: 100%; }
+        .mx-auto { margin-left: auto; margin-right: auto; }
+        .px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
+        .py-4 { padding-top: 1rem; padding-bottom: 1rem; }
+        .flex { display: flex; }
+        .justify-between { justify-content: space-between; }
+        .items-center { align-items: center; }
+        .text-2xl { font-size: 1.5rem; line-height: 2rem; }
+        .font-bold { font-weight: 700; }
+        .text-slate-700 { color: #475569; }
+        .font-medium { font-weight: 500; }
+        .space-x-6 > :not([hidden]) ~ :not([hidden]) { margin-left: 1.5rem; }
+        .transition { transition-property: all; transition-duration: 150ms; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); }
+        .sm\\:flex { display: none; }
+        @media (min-width: 640px) { .sm\\:flex { display: flex; } }
+        .bg-white { background-color: #ffffff; }
+        .shadow-sm { box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.05); }
+        .fixed { position: fixed; }
+        .top-0 { top: 0; }
+        .z-50 { z-index: 50; }
+        .max-w-6xl { max-width: 72rem; }
+        .px-5 { padding-left: 1.25rem; padding-right: 1.25rem; }
+        .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+        .rounded-xl { border-radius: 0.75rem; }
+        .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+        .font-semibold { font-weight: 600; }
+        .shadow { box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06); }
+        .hover\\:text-\\[var\\(--lh-blue\\)\\]:hover { color: var(--lh-blue); }
+        .hover\\:bg-\\[var\\(--lh-blue-dark\\)\\]:hover { background-color: var(--lh-blue-dark); }
+        .focus\\:outline-none:focus { outline: 2px solid transparent; outline-offset: 2px; }
+        .focus\\:ring-2:focus { --tw-ring-offset-shadow: 0 0 #0000; --tw-ring-shadow: 0 0 0 2px var(--lh-blue); box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow); }
+        .pt-28 { padding-top: 7rem; }
+        .pb-20 { padding-bottom: 5rem; }
+        .max-w-5xl { max-width: 64rem; }
+        .text-center { text-align: center; }
+        .text-4xl { font-size: 2.25rem; line-height: 2.5rem; }
+        .md\\:text-5xl { font-size: 3rem; line-height: 1; }
+        @media (min-width: 768px) { .md\\:text-5xl { font-size: 3rem; line-height: 1; } }
+        .text-slate-900 { color: #0f172a; }
+        .leading-tight { line-height: 1.25; }
+        .mt-4 { margin-top: 1rem; }
+        .text-lg { font-size: 1.125rem; line-height: 1.75rem; }
+        .text-slate-600 { color: #475569; }
+        .max-w-2xl { max-width: 42rem; }
+        .mt-8 { margin-top: 2rem; }
+        .inline-block { display: inline-block; }
+        .px-8 { padding-left: 2rem; padding-right: 2rem; }
+        .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+        .py-20 { padding-top: 5rem; padding-bottom: 5rem; }
+        .text-3xl { font-size: 1.875rem; line-height: 2.25rem; }
+        .mb-8 { margin-bottom: 2rem; }
+        .grid { display: grid; }
+        .gap-6 { gap: 1.5rem; }
+        .md\\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        @media (min-width: 768px) { .md\\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+        .p-6 { padding: 1.5rem; }
+        .rounded-2xl { border-radius: 1rem; }
+        .hover\\:shadow-lg:hover { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
+        .cursor-pointer { cursor: pointer; }
+        .border { border-width: 1px; }
+        .border-slate-200 { border-color: #e2e8f0; }
+        .text-xl { font-size: 1.25rem; line-height: 1.75rem; }
+        .mt-2 { margin-top: 0.5rem; }
+        .mb-10 { margin-bottom: 2.5rem; }
+        .gap-10 { gap: 2.5rem; }
+        .text-5xl { font-size: 3rem; line-height: 1; }
+        .mb-4 { margin-bottom: 1rem; }
+        .mb-2 { margin-bottom: 0.5rem; }
+        .gap-8 { gap: 2rem; }
+        .p-8 { padding: 2rem; }
+        .border-2 { border-width: 2px; }
+        .scale-105 { --tw-scale-x: 1.05; --tw-scale-y: 1.05; transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y)); }
+        .bg-slate-200 { background-color: #e2e8f0; }
+        .hover\\:bg-slate-300:hover { background-color: #cbd5e1; }
+        .border-t { border-top-width: 1px; }
+        .md\\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+        @media (min-width: 768px) { .md\\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+
+
+        /* Custom Styles for Interactive Elements */
+        .lh-primary-btn {
+            background-color: var(--lh-blue);
+            transition: background-color 0.15s;
+        }
+        .lh-primary-btn:hover:not(:disabled) {
+            background-color: var(--lh-blue-dark);
+        }
+        .lh-focus:focus {
+            border-color: var(--lh-blue);
+            box-shadow: 0 0 0 2px var(--lh-blue);
+            outline: none;
+        }
+
+        /* Modal Specific Styles */
+        .fixed { position: fixed; }
+        .inset-0 { top: 0; right: 0; bottom: 0; left: 0; }
+        .bg-black\\/40 { background-color: rgba(0, 0, 0, 0.4); }
+        .flex { display: flex; }
+        .justify-center { justify-content: center; }
+        .items-center { align-items: center; }
+        .z-50 { z-index: 50; }
+        .p-4 { padding: 1rem; }
+        .overflow-y-auto { overflow-y: auto; }
+        .max-w-lg { max-width: 32rem; }
+        .max-w-2xl { max-width: 42rem; }
+        .w-full { width: 100%; }
+        .shadow-2xl { box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
+        .my-10 { margin-top: 2.5rem; margin-bottom: 2.5rem; }
+        .text-\\[var\\(--lh-blue-dark\\)\\] { color: var(--lh-blue-dark); }
+        .p-3 { padding: 0.75rem; }
+        .border-slate-300 { border-color: #cbd5e1; }
+        .mt-1 { margin-top: 0.25rem; }
+        .mt-4 { margin-top: 1rem; }
+        .mt-6 { margin-top: 1.5rem; }
+        .mt-3 { margin-top: 0.75rem; }
+        .bg-red-100 { background-color: #fee2e2; }
+        .text-red-700 { color: #b91c1c; }
+        .flex-1 { flex: 1 1 0%; }
+        .space-x-3 > :not([hidden]) ~ :not([hidden]) { margin-left: 0.75rem; }
+        .sm\\:space-x-3 > :not([hidden]) ~ :not([hidden]) { margin-left: 0.75rem; }
+        @media (min-width: 640px) { .sm\\:space-x-3 > :not([hidden]) ~ :not([hidden]) { margin-left: 0.75rem; } }
+        .sm\\:space-y-0 > :not([hidden]) ~ :not([hidden]) { margin-top: 0; margin-bottom: 0; }
+        @media (min-width: 640px) { .sm\\:space-y-0 > :not([hidden]) ~ :not([hidden]) { margin-top: 0; margin-bottom: 0; } }
+        .space-y-3 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.75rem; }
+        .sm\\:flex-row { flex-direction: row; }
+        @media (min-width: 640px) { .sm\\:flex-row { flex-direction: row; } }
+        .flex-col { flex-direction: column; }
+        .bg-slate-50 { background-color: #f8fafc; }
+        .max-h-\\[60vh\\] { max-height: 60vh; }
+        .overflow-auto { overflow: auto; }
+        .font-mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+        .resize-none { resize: none; }
+        .text-white { color: #ffffff; }
+        .hover\\:bg-slate-100:hover { background-color: #f1f5f9; }
+
+        /* Ensure all form elements inherit box-sizing and look good */
+        input, textarea, button {
+            box-sizing: border-box;
+        }
+
+        /* Additional needed styles for mobile responsiveness */
+        @media (max-width: 640px) {
+            .sm\\:flex { display: none !important; }
+            /* Adjusted grid layout for mobile */
+            .md\\:grid-cols-3, .md\\:grid-cols-4 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+            .md\\:text-5xl { font-size: 2.25rem; line-height: 2.5rem; }
+        }
+    </style>
 </head>
-
-<body class="text-slate-800 font-sans">
-
-  <!-- NAVBAR -->
-  <nav class="w-full bg-white shadow-sm fixed top-0 z-50">
-    <div class="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
-      <div class="text-2xl font-bold text-[var(--lh-blue-dark)]">LetterHammer</div>
-      <div class="flex space-x-6 text-slate-700 font-medium">
-        <a href="#scenarios" class="hover:text-[var(--lh-blue)]">Scenarios</a>
-        <a href="#how" class="hover:text-[var(--lh-blue)]">How It Works</a>
-        <a href="#pricing" class="hover:text-[var(--lh-blue)]">Pricing</a>
-      </div>
-    </div>
-  </nav>
-
-  <!-- HERO -->
-  <section class="pt-28 pb-20 bg-white">
-    <div class="max-w-5xl mx-auto text-center px-6">
-      <h1 class="text-4xl md:text-5xl font-bold text-slate-900 leading-tight">
-        Turn Your Frustration Into a Clear, Powerful Letter
-      </h1>
-      <p class="mt-4 text-lg text-slate-600 max-w-2xl mx-auto">
-        AI-written letters that help you fight bills, tickets, landlords, refunds,
-        debt collectors, and more. Just answer a few simple questions.
-      </p>
-      <button class="mt-8 px-8 py-3 bg-[var(--lh-blue)] text-white rounded-xl shadow hover:bg-[var(--lh-blue-dark)] transition">
-        Start Free
-      </button>
-    </div>
-  </section>
-
-  <!-- SCENARIOS -->
-  <section id="scenarios" class="py-20 bg-[var(--lh-blue-light)]">
-    <div class="max-w-6xl mx-auto px-6">
-      <h2 class="text-3xl font-bold text-slate-900 mb-8">Choose Your Situation</h2>
-
-      <div class="grid md:grid-cols-3 gap-6">
-
-        <div class="scenario-card bg-white p-6 rounded-2xl shadow hover:shadow-md cursor-pointer border border-slate-200">
-          <h3 class="text-xl font-semibold">Parking Ticket Appeal</h3>
-          <p class="text-slate-600 mt-2">Dispute an unfair or incorrect parking citation.</p>
+<body class="bg-[var(--lh-bg)] text-slate-800 font-sans">
+    <!-- NAVBAR -->
+    <nav class="w-full bg-white shadow-sm fixed top-0 z-50">
+        <div class="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="text-2xl font-bold text-[var(--lh-blue-dark)]">LetterHammer</div>
+            <div class="hidden sm:flex space-x-6 text-slate-700 font-medium">
+                <a href="#scenarios" class="hover:text-[var(--lh-blue)] transition">Scenarios</a>
+                <a href="#how" class="hover:text-[var(--lh-blue)] transition">How It Works</a>
+                <a href="#pricing" class="hover:text-[var(--lh-blue)] transition">Pricing</a>
+            </div>
+            <button class="px-5 py-2 bg-[var(--lh-blue)] text-white rounded-xl text-sm font-semibold shadow hover:bg-[var(--lh-blue-dark)] transition focus:outline-none focus:ring-2 focus:ring-[var(--lh-blue)]">Start Free</button>
         </div>
+    </nav>
 
-        <div class="scenario-card bg-white p-6 rounded-2xl shadow hover:shadow-md cursor-pointer border border-slate-200">
-          <h3 class="text-xl font-semibold">Medical Bill Dispute</h3>
-          <p class="text-slate-600 mt-2">Challenge incorrect or inflated medical charges.</p>
+    <!-- HERO -->
+    <section class="pt-28 pb-20 bg-white">
+        <div class="max-w-5xl mx-auto text-center px-6">
+            <h1 class="text-4xl md:text-5xl font-bold text-slate-900 leading-tight">Turn Your Frustration Into a Clear, Powerful Letter</h1>
+            <p class="mt-4 text-lg text-slate-600 max-w-2xl mx-auto">AI‑written letters that help you fight bills, tickets, landlords, refunds, debt collectors, and more. Just answer a few simple questions.</p>
+            <a href="#scenarios" class="inline-block mt-8 px-8 py-3 bg-[var(--lh-blue)] text-white rounded-xl shadow hover:bg-[var(--lh-blue-dark)] transition">
+                Start Generating Now
+            </a>
         </div>
+    </section>
 
-        <div class="scenario-card bg-white p-6 rounded-2xl shadow hover:shadow-md cursor-pointer border border-slate-200">
-          <h3 class="text-xl font-semibold">Refund Request Escalation</h3>
-          <p class="text-slate-600 mt-2">Get a refund when customer service failed.</p>
+    <!-- SCENARIOS -->
+    <section id="scenarios" class="py-20 bg-[var(--lh-blue-light)]">
+        <div class="max-w-6xl mx-auto px-6">
+            <h2 class="text-3xl font-bold text-slate-900 mb-8">Choose Your Situation</h2>
+
+            <!-- Original 6 cards + 3 new cards -->
+            <div class="grid md:grid-cols-3 gap-6">
+                <!-- Row 1 -->
+                <div class="bg-white p-6 rounded-2xl shadow hover:shadow-lg transition cursor-pointer border border-slate-200 scenario-card" data-scenario="Parking Ticket Appeal">
+                    <h3 class="text-xl font-semibold">Parking Ticket Appeal</h3>
+                    <p class="text-slate-600 mt-2">Dispute an unfair or incorrect parking citation.</p>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl shadow hover:shadow-lg transition cursor-pointer border border-slate-200 scenario-card" data-scenario="Medical Bill Dispute">
+                    <h3 class="text-xl font-semibold">Medical Bill Dispute</h3>
+                    <p class="text-slate-600 mt-2">Challenge incorrect or inflated medical charges.</p>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl shadow hover:shadow-lg transition cursor-pointer border border-slate-200 scenario-card" data-scenario="Refund Request Escalation">
+                    <h3 class="text-xl font-semibold">Refund Request Escalation</h3>
+                    <p class="text-slate-600 mt-2">Get a refund when customer service failed.</p>
+                </div>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-6 mt-6">
+                <!-- Row 2 -->
+                <div class="bg-white p-6 rounded-2xl shadow hover:shadow-lg transition cursor-pointer border border-slate-200 scenario-card" data-scenario="Landlord / Rental Issue">
+                    <h3 class="text-xl font-semibold">Landlord / Rental Issue</h3>
+                    <p class="text-slate-600 mt-2">Repairs, deposits, illegal fees, and more.</p>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl shadow hover:shadow-lg transition cursor-pointer border border-slate-200 scenario-card" data-scenario="Debt Collector Validation">
+                    <h3 class="text-xl font-semibold">Debt Collector Validation</h3>
+                    <p class="text-slate-600 mt-2">Force collectors to prove a debt is legitimate.</p>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl shadow hover:shadow-lg transition cursor-pointer border border-slate-200 scenario-card" data-scenario="Workplace Issue Letter">
+                    <h3 class="text-xl font-semibold">Workplace Issue Letter</h3>
+                    <p class="text-slate-600 mt-2">Unpaid wages, scheduling issues, or mistreatment.</p>
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6 mt-6">
+                <!-- Row 3 (New, Unique Scenarios) -->
+                <div class="bg-white p-6 rounded-2xl shadow hover:shadow-lg transition cursor-pointer border border-slate-200 scenario-card" data-scenario="Credit Report Correction (FCRA)">
+                    <h3 class="text-xl font-semibold">Credit Report Correction (FCRA)</h3>
+                    <p class="text-slate-600 mt-2">Dispute inaccurate items on your credit report with the bureau.</p>
+                </div>
+                
+                <div class="bg-white p-6 rounded-2xl shadow hover:shadow-lg transition cursor-pointer border border-slate-200 scenario-card" data-scenario="Unsolicited Debt Communication Cease & Desist">
+                    <h3 class="text-xl font-semibold">Unsolicited Debt Communication Cease & Desist</h3>
+                    <p class="text-slate-600 mt-2">Demand a debt collector stop all forms of contact immediately.</p>
+                </div>
+                
+                <div class="bg-white p-6 rounded-2xl shadow hover:shadow-lg transition cursor-pointer border border-slate-200 scenario-card" data-scenario="Data Deletion Request (GDPR/CCPA)">
+                    <h3 class="text-xl font-semibold">Data Deletion Request (GDPR/CCPA)</h3>
+                    <p class="text-slate-600 mt-2">Invoke your right to have personal data deleted by a company.</p>
+                </div>
+            </div>
+
         </div>
+    </section>
 
-        <div class="scenario-card bg-white p-6 rounded-2xl shadow hover:shadow-md cursor-pointer border border-slate-200">
-          <h3 class="text-xl font-semibold">Landlord / Rental Issue</h3>
-          <p class="text-slate-600 mt-2">Repairs, deposits, illegal fees, and more.</p>
+    <!-- HOW IT WORKS -->
+    <section id="how" class="py-20 bg-white">
+        <div class="max-w-6xl mx-auto px-6">
+            <h2 class="text-3xl font-bold text-slate-900 mb-10 text-center">How It Works</h2>
+
+            <div class="grid md:grid-cols-3 gap-10">
+                <div class="text-center">
+                    <div class="text-[var(--lh-blue)] text-5xl font-bold mb-4">1</div>
+                    <h3 class="text-xl font-semibold mb-2">Pick a Scenario</h3>
+                    <p class="text-slate-600">Choose from common issues like tickets, bills, landlords, refunds, or workplace conflicts.</p>
+                </div>
+
+                <div class="text-center">
+                    <div class="text-[var(--lh-blue)] text-5xl font-bold mb-4">2</div>
+                    <h3 class="text-xl font-semibold mb-2">Answer a Few Questions</h3>
+                    <p class="text-slate-600">We ask for just the facts. No legal jargon, no complexity — just what happened.</p>
+                </div>
+
+                <div class="text-center">
+                    <div class="text-[var(--lh-blue)] text-5xl font-bold mb-4">3</div>
+                    <h3 class="text-xl font-semibold mb-2">Get Your Letter</h3>
+                    <p class="text-slate-600">AI generates a polished, professional letter ready to send. Copy and use it instantly.</p>
+                </div>
+            </div>
         </div>
+    </section>
 
-        <div class="scenario-card bg-white p-6 rounded-2xl shadow hover:shadow-md cursor-pointer border border-slate-200">
-          <h3 class="text-xl font-semibold">Debt Collector Validation</h3>
-          <p class="text-slate-60
+    <!-- PRICING -->
+    <section id="pricing" class="py-20 bg-[var(--lh-blue-light)]">
+        <div class="max-w-6xl mx-auto px-6 text-center">
+            <h2 class="text-3xl font-bold mb-10 text-slate-900">Simple Pricing</h2>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="bg-white p-8 rounded-2xl shadow border border-slate-200">
+                    <h3 class="text-xl font-semibold mb-2">Free</h3>
+                    <p class="text-slate-600 mb-4">1 standard letter</p>
+                    <p class="text-3xl font-bold text-slate-900 mb-6">$0</p>
+                    <button class="px-6 py-3 rounded-xl bg-slate-200 hover:bg-slate-300 transition">Start</button>
+                </div>
+
+                <div class="bg-white p-8 rounded-2xl shadow-lg border-2 border-[var(--lh-blue)] scale-105">
+                    <h3 class="text-xl font-semibold mb-2">Premium</h3>
+                    <p class="text-slate-600 mb-4">Unlimited letters + all scenarios</p>
+                    <p class="text-3xl font-bold text-slate-900 mb-6">$19/mo</p>
+                    <button class="px-6 py-3 rounded-xl bg-[var(--lh-blue)] text-white hover:bg-[var(--lh-blue-dark)] transition">Upgrade</button>
+                </div>
+
+                <div class="bg-white p-8 rounded-2xl shadow border border-slate-200">
+                    <h3 class="text-xl font-semibold mb-2">Case Bundle</h3>
+                    <p class="text-slate-600 mb-4">6 letters for one ongoing issue</p>
+                    <p class="text-3xl font-bold text-slate-900 mb-6">$49</p>
+                    <button class="px-6 py-3 rounded-xl bg-slate-200 hover:bg-slate-300 transition">Get Bundle</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="py-10 bg-white border-t border-slate-200 text-center text-slate-600">
+        <p>© 2025 LetterHammer. All rights reserved. Note: This is not legal advice.</p>
+    </footer>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            // ===== AI GENERATOR SETUP =====
+
+            // Example scenario templates (using generic inputs for demo)
+            const SCENARIOS = {
+                "Parking Ticket Appeal": [
+                    { id: "fullName", label: "Your Full Name", type: "text", placeholder: "John A. Doe" },
+                    { id: "address", label: "Your Mailing Address", type: "textarea", placeholder: "123 Main St, Anytown, CA" },
+                    { id: "ticketNumber", label: "Ticket Number", type: "text", placeholder: "ABC-12345" },
+                    { id: "issuingAgency", label: "Issuing Agency", type: "text", placeholder: "City of Anytown Parking Authority" },
+                    { id: "incidentDate", label: "Incident Date", type: "text", placeholder: "01/15/2025" },
+                    { id: "reason", label: "Why is the ticket unfair? (Be specific)", type: "textarea", placeholder: "The sign was obscured by a tree branch, making the parking restriction invisible." },
+                    { id: "desiredOutcome", label: "What result do you want?", type: "text", placeholder: "Waiver of the fine and dismissal of the citation." }
+                ],
+                "Medical Bill Dispute": [
+                    { id: "fullName", label: "Your Full Name", type: "text", placeholder: "John A. Doe" },
+                    { id: "provider", label: "Medical Provider/Hospital", type: "text", placeholder: "General Hospital Billing Dept" },
+                    { id: "accountNumber", label: "Account/Reference Number", type: "text", placeholder: "987654321" },
+                    { id: "amount", label: "Bill Amount Disputed", type: "text", placeholder: "$4,500.00" },
+                    { id: "issue", label: "What is wrong about the bill?", type: "textarea", placeholder: "I was charged for a procedure (CPT 99203) that was included in the bundled price of the surgery (CPT 12345)." },
+                    { id: "desiredOutcome", label: "What outcome do you want?", type: "text", placeholder: "Adjustment of the bill to remove the duplicate charge of $4,500.00." }
+                ],
+                "Refund Request Escalation": [
+                    { id: "fullName", label: "Your Full Name", type: "text", placeholder: "John A. Doe" },
+                    { id: "companyName", label: "Company Name", type: "text", placeholder: "ACME Online Store" },
+                    { id: "orderNumber", label: "Order/Transaction Number", type: "text", placeholder: "ORD-9876" },
+                    { id: "purchaseDate", label: "Purchase Date", type: "text", placeholder: "10/01/2024" },
+                    { id: "issue", label: "What is the history of the issue and why is the refund due?", type: "textarea", placeholder: "I returned the item within the 30-day window on Oct 15th (tracking 1Z...). Customer service promised a refund twice, but it has not been processed." },
+                    { id: "amount", label: "Refund Amount Due", type: "text", placeholder: "$150.00" }
+                ],
+                "Landlord / Rental Issue": [
+                    { id: "fullName", label: "Your Full Name", type: "text", placeholder: "John A. Doe" },
+                    { id: "landlordName", label: "Landlord/Management Name", type: "text", placeholder: "Smith Property Management" },
+                    { id: "propertyAddress", label: "Rental Property Address", type: "textarea", placeholder: "Apt 2B, 456 Oak St" },
+                    { id: "issueDate", label: "Date Issue Started", type: "text", placeholder: "03/01/2025" },
+                    { id: "issueDetail", label: "Describe the specific issue and what has failed so far.", type: "textarea", placeholder: "The heating system stopped working on March 1st. I notified the property manager via email on March 2nd and called on March 5th. It is still 40°F in the unit." },
+                    { id: "demand", label: "Formal Demand (e.g., immediate repair, rent reduction)", type: "text", placeholder: "Immediate repair of the heating system within 24 hours." }
+                ],
+                "Debt Collector Validation": [
+                    { id: "fullName", label: "Your Full Name", type: "text", placeholder: "John A. Doe" },
+                    { id: "address", label: "Your Mailing Address", type: "textarea", placeholder: "123 Main St, Anytown, CA" },
+                    { id: "collectorName", label: "Collection Agency Name", type: "text", placeholder: "Midland Funding LLC" },
+                    { id: "collectorAddress", label: "Collection Agency Address", type: "textarea", placeholder: "P.O. Box 123, Collector City, NY" },
+                    { id: "accountNumber", label: "Account Number from Collection Notice", type: "text", placeholder: "Reference # 555-DC-001" }
+                ],
+                "Workplace Issue Letter": [
+                    { id: "fullName", label: "Your Full Name", type: "text", placeholder: "John A. Doe" },
+                    { id: "managerName", label: "Manager/HR Name", type: "text", placeholder: "Jane Smith, HR Director" },
+                    { id: "companyName", label: "Company Name", type: "text", placeholder: "TechCorp Industries" },
+                    { id: "issueDate", label: "Date Issue Began", type: "text", placeholder: "11/01/2024" },
+                    { id: "issueDetail", label: "Describe the issue and evidence.", type: "textarea", placeholder: "I have not been paid overtime for the last 3 pay periods (approx 40 hours total). Time cards clearly show the extra hours worked, which is a violation of the FLSA." },
+                    { id: "desiredResolution", label: "Desired Resolution", type: "text", placeholder: "Immediate payment of all outstanding overtime wages." }
+                ],
+                // --- NEW SCENARIOS ADDED BELOW ---
+                "Credit Report Correction (FCRA)": [
+                    { id: "fullName", label: "Your Full Name", type: "text", placeholder: "John A. Doe" },
+                    { id: "address", label: "Your Mailing Address", type: "textarea", placeholder: "123 Main St, Anytown, CA" },
+                    { id: "creditBureau", label: "Credit Bureau to Send To", type: "text", placeholder: "Experian, Equifax, or TransUnion" },
+                    { id: "accountName", label: "Creditor Name", type: "text", placeholder: "ACME Credit Card" },
+                    { id: "accountNumber", label: "Account Number on Report", type: "text", placeholder: "1234XXXXXXXX9876" },
+                    { id: "disputeReason", label: "Why is the item incorrect?", type: "textarea", placeholder: "Account was paid in full on 03/15/2024, but the report still shows a late payment from April." }
+                ],
+                "Unsolicited Debt Communication Cease & Desist": [
+                    { id: "fullName", label: "Your Full Name", type: "text", placeholder: "John A. Doe" },
+                    { id: "address", label: "Your Mailing Address", type: "textarea", placeholder: "123 Main St, Anytown, CA" },
+                    { id: "collectorName", label: "Collection Agency Name", type: "text", placeholder: "Aggressive Collections Co." },
+                    { id: "collectorAddress", label: "Collection Agency Address", type: "textarea", placeholder: "100 Debt Row, Collection City, NY" },
+                    { id: "accountNumber", label: "Account Number from Notice (optional)", type: "text", placeholder: "Ref # 555-DC-001" },
+                    { id: "reason", label: "Briefly mention the type of harassment (e.g., constant calls, calling workplace)", type: "text", placeholder: "The company has called my workplace multiple times after being asked to stop." }
+                ],
+                "Data Deletion Request (GDPR/CCPA)": [
+                    { id: "fullName", label: "Your Full Name", type: "text", placeholder: "Jane B. Smith" },
+                    { id: "emailUsed", label: "Email Address Used for Account", type: "text", placeholder: "jane.smith@example.com" },
+                    { id: "companyName", label: "Company Holding Your Data", type: "text", placeholder: "SocialConnect Inc." },
+                    { id: "companyAddress", label: "Company's Data Privacy Address (if known)", type: "textarea", placeholder: "Data Privacy Office, 500 Tech Ave, Silicon Valley, CA" },
+                    { id: "dataDetail", label: "Specify the data you want deleted (e.g., all personal data, purchase history)", type: "text", placeholder: "All personal information and account history associated with my email." }
+                ]
+            };
+            // --- END NEW SCENARIOS ADDED ---
+
+            // --- Modal Functions ---
+
+            function openScenario(name) {
+                const fields = SCENARIOS[name];
+                let formHtml = "";
+
+                fields.forEach(f => {
+                    const inputType = f.type === 'textarea' ? `<textarea id='${f.id}' required rows="3" class='w-full p-3 border border-slate-300 rounded-xl mt-1 lh-focus' placeholder='${f.placeholder}'></textarea>` :
+                                                             `<input id='${f.id}' type='${f.type}' required class='w-full p-3 border border-slate-300 rounded-xl mt-1 lh-focus' placeholder='${f.placeholder}' />`;
+
+                    formHtml += `
+                        <div>
+                            <label for='${f.id}' class='block font-medium text-slate-700 mt-4'>${f.label} *</label>
+                            ${inputType}
+                        </div>
+                    `;
+                });
+
+                const modal = document.createElement("div");
+                modal.id = "lh-modal";
+                // Using embedded CSS classes
+                modal.className = "fixed inset-0 bg-black/40 flex justify-center items-center z-50 p-4 overflow-y-auto";
+                modal.innerHTML = `
+                    <div class='bg-white p-8 rounded-2xl max-w-lg w-full shadow-2xl my-10'>
+                        <h2 class='text-2xl font-bold mb-4 text-[var(--lh-blue-dark)]'>${name}</h2>
+                        <form id="scenario-form">${formHtml}</form>
+                        <div id="modal-message" class="hidden text-sm p-3 rounded-lg mt-4 bg-red-100 text-red-700"></div>
+                        <button id='lh-generate' class='lh-primary-btn mt-6 w-full text-white p-3 rounded-xl font-semibold transition'>Generate Letter</button>
+                        <button onclick="document.getElementById('lh-modal').remove()" class='mt-3 w-full p-3 rounded-xl border border-slate-300 hover:bg-slate-50 transition'>Cancel</button>
+                    </div>
+                `;
+
+                document.body.appendChild(modal);
+
+                // Attach listener to the generate button
+                document.getElementById("lh-generate").addEventListener('click', () => {
+                    const form = document.getElementById("scenario-form");
+                    if (form.checkValidity()) {
+                        generateLetter(name, fields);
+                    } else {
+                        // Display error for required fields
+                        document.getElementById('modal-message').textContent = 'Please fill out all required fields.';
+                        document.getElementById('modal-message').classList.remove('hidden');
+                    }
+                });
+            }
+
+            // Attach onclick to scenario cards
+            document.querySelectorAll('#scenarios .scenario-card').forEach((card) => {
+                card.addEventListener('click', () => openScenario(card.getAttribute('data-scenario')));
+            });
+
+            // --- AI GENERATION (Gemini) ---
+            async function generateLetter(scenarioName, fields) {
+                const generateButton = document.getElementById("lh-generate");
+                const originalText = generateButton.textContent;
+                const modalMessage = document.getElementById('modal-message');
+
+                generateButton.textContent = "Generating... (Please wait)";
+                generateButton.disabled = true;
+                modalMessage.classList.add('hidden');
+
+                // Collect answers
+                const answers = {};
+                fields.forEach(f => {
+                    answers[f.id] = document.getElementById(f.id).value.trim();
+                });
+
+                const promptText = `
+                    You are a professional letter writing assistant called LetterHammer.
+                    Your goal is to write a formal, clear, and professional letter based on the scenario and facts provided by the user.
+
+                    Instructions:
+                    1. Format the letter for printing, including placeholders like "[Sender Signature]" and "[Today's Date]".
+                    2. Use the exact information provided by the user for names, addresses, and numbers.
+                    3. Do not include any conversational text or explanation before or after the letter, just the professional document itself.
+                    4. IMPORTANT: For scenarios related to Credit Report Correction or Debt Collection Cease & Desist, explicitly cite the relevant consumer protection laws (e.g., Fair Credit Reporting Act or Fair Debt Collection Practices Act) to make the letter legally robust.
+
+                    Scenario: ${scenarioName}
+
+                    User information:
+                    ${Object.entries(answers).map(([k,v]) => `- ${k}: ${v}`).join("\n")}
+                `;
+
+                // --- API CALL CONFIGURATION ---
+                const apiKey = ""; // Canvas will provide this if empty string
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+                const payload = {
+                    contents: [{ parts: [{ text: promptText }] }],
+                    systemInstruction: {
+                        parts: [{ text: "You are a professional letter writing assistant called LetterHammer. Write a formal, clear, and professional letter for the user's specified scenario. Include today's date and the sender/recipient addresses. Do not include any conversational text or explanation, just the letter itself, formatted as plain text." }]
+                    }
+                };
+
+                // Exponential Backoff Implementation
+                const maxRetries = 3;
+                let attempt = 0;
+                let output = "The AI service is currently unavailable. Please try again later.";
+
+                while (attempt < maxRetries) {
+                    try {
+                        const response = await fetch(apiUrl, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify(payload)
+                        });
+
+                        if (response.ok) {
+                            const data = await response.json();
+                            output = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? "No response received. Please check your inputs.";
+                            break; // Success, exit loop
+                        } else if (response.status === 429 && attempt < maxRetries - 1) {
+                            // Rate limit, retry
+                            const delay = Math.pow(2, attempt) * 1000 + Math.random() * 1000;
+                            await new Promise(resolve => setTimeout(resolve, delay));
+                            attempt++;
+                        } else {
+                            // Other error, break loop
+                            output = `Error generating letter (Status: ${response.status}).`;
+                            break;
+                        }
+                    } catch (error) {
+                        // Network error
+                        if (attempt < maxRetries - 1) {
+                            const delay = Math.pow(2, attempt) * 1000 + Math.random() * 1000;
+                            await new Promise(resolve => setTimeout(resolve, delay));
+                            attempt++;
+                        } else {
+                            output = "Network error or connection failed.";
+                            break;
+                        }
+                    }
+                }
+
+                // Reset button state
+                generateButton.textContent = originalText;
+                generateButton.disabled = false;
+
+                // Hide input modal and show output modal
+                document.getElementById("lh-modal")?.remove();
+                showLetter(output);
+            }
+
+            // --- SHOW OUTPUT ---
+            function showLetter(text) {
+                const modal = document.createElement("div");
+                modal.id = "lh-output-modal";
+                // Using embedded CSS classes
+                modal.className = "fixed inset-0 bg-black/40 flex justify-center items-center z-50 p-4 overflow-y-auto";
+
+                modal.innerHTML = `
+                    <div class='bg-white p-8 rounded-2xl max-w-2xl w-full shadow-2xl my-10'>
+                        <h2 class='text-2xl font-bold mb-4 text-[var(--lh-blue-dark)]'>Your Generated Letter</h2>
+                        <p class="text-sm text-slate-600 mb-4">Review, edit if needed, and copy the final version below.</p>
+                        <textarea id='letter-output-textarea' rows='15' class='w-full p-4 border rounded-xl bg-slate-50 max-h-[60vh] overflow-auto font-mono text-sm resize-none'>${text}</textarea>
+                        
+                        <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3 mt-6">
+                            <button id='lh-copy' class='lh-primary-btn flex-1 text-white p-3 rounded-xl font-semibold transition'>Copy Letter</button>
+                            <button onclick='document.getElementById("lh-output-modal").remove()' class='flex-1 p-3 rounded-xl border border-slate-300 hover:bg-slate-100 transition'>Close</button>
+                        </div>
+                    </div>
+                `;
+
+                document.body.appendChild(modal);
+
+                // Attach copy listener
+                document.getElementById('lh-copy').addEventListener('click', () => {
+                    const textarea = document.getElementById('letter-output-textarea');
+
+                    // Use document.execCommand('copy') for better iframe compatibility
+                    textarea.select();
+                    document.execCommand('copy');
+
+                    const copyButton = document.getElementById('lh-copy');
+                    copyButton.textContent = 'Copied!';
+                    copyButton.classList.remove('lh-primary-btn');
+                    copyButton.classList.add('bg-green-500');
+
+                    setTimeout(() => {
+                        copyButton.textContent = 'Copy Letter';
+                        copyButton.classList.remove('bg-green-500');
+                        copyButton.classList.add('lh-primary-btn');
+                    }, 2000);
+                });
+            }
+        });
+    </script>
+</body>
+</html>
